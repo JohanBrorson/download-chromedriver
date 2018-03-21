@@ -21,6 +21,7 @@ LOGGER = logging.getLogger('console')
 
 
 def main():
+    """"Main function"""
     version = get_latest_release()
     for platform in CHROMEDRIVER_PLATFORMS:
         url = get_chromedriver_url(version, platform)
@@ -32,6 +33,7 @@ def main():
 
 
 def get_latest_release():
+    """"Gets the lastest ChromeDriver version"""
     url = get_url("LATEST_RELEASE")
     request = open_url(url)
     version = request.read().rstrip()
@@ -40,6 +42,7 @@ def get_latest_release():
 
 
 def get_chromedriver_url(version, platform):
+    """Gets the ChromeDriver URL"""
     path = '{}/{}'.format(version, get_chromedriver_filename(platform))
     url = get_url(path)
     LOGGER.info(url)
@@ -47,14 +50,17 @@ def get_chromedriver_url(version, platform):
 
 
 def get_chromedriver_filename(platform):
+    """Gets the filename of the remote ChromeDriver"""
     return 'chromedriver_{}.zip'.format(platform)
 
 
 def get_url(path):
+    """Gets the URL by joining the specified path with the base URL"""
     return urlparse.urljoin(DOWNLOAD_BASE_URL, path)
 
 
 def open_url(source):
+    """Opens the URL for reading"""
     try:
         LOGGER.debug("Open URL: %s", source)
         return urllib2.urlopen(source)
@@ -64,10 +70,12 @@ def open_url(source):
 
 
 def download_file(source, destination):
+    """Downloads file"""
     urllib.urlretrieve(source, destination)
 
 
 def unzip(archive, target):
+    """Extracts an archive to target destination"""
     LOGGER.debug('Unzip %s to %s', archive, target)
     remove_directory(target)
     create_directory(target)
@@ -77,22 +85,26 @@ def unzip(archive, target):
 
 
 def get_target_directory(version, platform):
+    """Gets the path to the directory where ChromeDriver extracted to"""
     return os.path.realpath(os.path.join('chromedriver', version, platform))
 
 
 def create_directory(directory):
+    """Creates the specified directory, unless it already exists"""
     if not os.path.exists(directory):
         LOGGER.debug("Create directory: %s", directory)
         os.makedirs(directory)
 
 
 def remove_directory(directory, ignore_errors=False):
+    """Removes the specified directory"""
     if os.path.isdir(directory):
         LOGGER.debug("Delete directory: %s", directory)
         shutil.rmtree(directory, ignore_errors)
 
 
 def remove_file(path):
+    """Removes the specified file"""
     if os.path.isfile(path):
         LOGGER.debug("Remove %s", path)
         os.remove(path)
