@@ -2,9 +2,11 @@
 Download ChromeDriver
 """
 
+import argparse
 import logging
 import logging.config
 import os
+import platform
 import shutil
 import sys
 import urllib
@@ -14,7 +16,9 @@ import zipfile
 
 
 DOWNLOAD_BASE_URL = 'https://chromedriver.storage.googleapis.com'
-CHROMEDRIVER_PLATFORMS = ['linux64', 'mac64', 'win32']
+PLATFORM_WINDOWS = 'win32'
+PLATFORM_LINUX = 'linux64'
+PLATFORM_MACOS = 'mac64'
 
 logging.config.fileConfig(os.path.join(sys.path[0], 'logging.conf'))
 LOGGER = logging.getLogger('console')
@@ -22,14 +26,62 @@ LOGGER = logging.getLogger('console')
 
 def main():
     """"Main function"""
+    parser = argparse.ArgumentParser(
+        description=('Script for downloading and extracting ChromeDriver'))
+    parser.set_defaults(skip_window_updates=False)
+    parser.add_argument('-a', '--all',
+                        dest='should_download_all',
+                        action='store_true',
+                        required=False,
+                        default=False,
+                        help='download ChromeDriver for all platforms')
+
+    args = parser.parse_args()
+    if args.should_download_all:
+        LOGGER.debug("Download ChromeDriver for all platforms")
+        platforms = [PLATFORM_LINUX,
+                     PLATFORM_MACOS,
+                     PLATFORM_WINDOWS]
+    else:
+        LOGGER.debug("Download ChromeDriver for current platform")
+        platforms = [get_current_platform()]
+
     version = get_latest_release()
-    for platform in CHROMEDRIVER_PLATFORMS:
-        url = get_chromedriver_url(version, platform)
-        zip_file = get_chromedriver_filename(platform)
+    for platform_name in platforms:
+        url = get_chromedriver_url(version, platform_name)
+        zip_file = get_chromedriver_filename(platform_name)
         download_file(url, zip_file)
-        target = get_target_directory(version, platform)
+        target = get_target_directory(version, platform_name)
         unzip(zip_file, target)
         remove_file(zip_file)
+
+
+def get_current_platform():
+    """Gets this machines operating system"""
+    if is_windows():
+        return PLATFORM_WINDOWS
+    elif is_linux():
+        return PLATFORM_LINUX
+    elif is_macos():
+        return PLATFORM_MACOS
+    else:
+        LOGGER.error("Unsupported operating system")
+        sys.exit(2)
+
+
+def is_linux():
+    """Checks if the operating system is Linux"""
+    return 'linux' in str(platform.system()).lower()
+
+
+def is_macos():
+    """Checks if the operating system is macOS"""
+    return 'darwin' in str(platform.system()).lower()
+
+
+def is_windows():
+    """Checks if the operating system is Windows"""
+    return 'windows' in str(platform.system()).lower()
 
 
 def get_latest_release():
@@ -41,17 +93,17 @@ def get_latest_release():
     return version
 
 
-def get_chromedriver_url(version, platform):
+def get_chromedriver_url(version, platform_name):
     """Gets the ChromeDriver URL"""
-    path = '{}/{}'.format(version, get_chromedriver_filename(platform))
+    path = '{}/{}'.format(version, get_chromedriver_filename(platform_name))
     url = get_url(path)
     LOGGER.info(url)
     return url
 
 
-def get_chromedriver_filename(platform):
+def get_chromedriver_filename(platform_name):
     """Gets the filename of the remote ChromeDriver"""
-    return 'chromedriver_{}.zip'.format(platform)
+    return 'chromedriver_{}.zip'.format(platform_name)
 
 
 def get_url(path):
@@ -84,9 +136,10 @@ def unzip(archive, target):
     zip_ref.close()
 
 
-def get_target_directory(version, platform):
+def get_target_directory(version, platform_name):
     """Gets the path to the directory where ChromeDriver extracted to"""
-    return os.path.realpath(os.path.join('chromedriver', version, platform))
+    return os.path.realpath(os.path.join(
+        'chromedriver', version, platform_name))
 
 
 def create_directory(directory):
