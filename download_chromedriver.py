@@ -28,7 +28,6 @@ def main():
     """"Main function"""
     parser = argparse.ArgumentParser(
         description=('Script for downloading and extracting ChromeDriver'))
-    parser.set_defaults(skip_window_updates=False)
     parser.add_argument('-a', '--all',
                         dest='should_download_all',
                         action='store_true',
