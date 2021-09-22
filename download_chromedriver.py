@@ -9,9 +9,9 @@ import os
 import platform
 import shutil
 import sys
-import urllib
-import urllib2
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
+import urllib.parse
 import zipfile
 
 
@@ -107,22 +107,22 @@ def get_chromedriver_filename(platform_name):
 
 def get_url(path):
     """Gets the URL by joining the specified path with the base URL"""
-    return urlparse.urljoin(DOWNLOAD_BASE_URL, path)
+    return urllib.parse.urljoin(DOWNLOAD_BASE_URL, path)
 
 
 def open_url(source):
     """Opens the URL for reading"""
     try:
         LOGGER.debug("Open URL: %s", source)
-        return urllib2.urlopen(source)
-    except urllib2.URLError, error:
+        return urllib.request.urlopen(source)
+    except urllib.error.URLError as error:
         LOGGER.error('Fail to download file, exception: %s', error.reason)
         sys.exit(1)
 
 
 def download_file(source, destination):
     """Downloads file"""
-    urllib.urlretrieve(source, destination)
+    urllib.request.urlretrieve(source, destination)
 
 
 def unzip(archive, target):
