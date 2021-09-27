@@ -87,7 +87,7 @@ def get_latest_release():
     """"Gets the lastest ChromeDriver version"""
     url = get_url("LATEST_RELEASE")
     request = open_url(url)
-    version = request.read().rstrip()
+    version = request.read().rstrip().decode("utf-8")
     LOGGER.debug("Latest release: %s", version)
     return version
 
